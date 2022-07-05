@@ -1,16 +1,12 @@
-addpath('../../Functions/');
-ASCII_DIR=('.');
-
-
 %% load chromosome information
 load('vars.mat')
 
-
 %% make DNA RW
-
+makeTS=0;
+ASCII_DIR=('.');
 FN_ASCII=(sprintf('%s/RandomWalk_Chr1.ascii',ASCII_DIR));
 % vergleiche ascii file
-if exist(FN_ASCII,'file')==0
+if makeTS==1
     DATA=load(sprintf('../../../data/PERL_SEQ_ALL/Chr%d_BINALL.perl.ascii',ChrNr));
     unix(sprintf('touch %s',FN_ASCII))
     TS=nan(Resolution,50);
@@ -36,14 +32,14 @@ if exist(FN_ASCII,'file')==0
     fclose(fid);
     
     clear X*;clear TS;
+    
+    
+    X=load(FN_ASCII);X=X(:,BINs(:,1));
+    h=plot(X(:,:),'linewidth',1);
+    xlabel('steps [nucleotides]','fontsize',20,'interpreter','latex')
+    ylabel('$x(s)$','fontsize',20,'interpreter','latex')
+    title('Random Walk DNA chr1:1000001-6100001','fontsize',20,'interpreter','latex')
 end
-
-X=load(FN_ASCII);X=X(:,BINs(:,1));
-h=plot(X(:,:),'linewidth',1);
-xlabel('steps [nucleotides]','fontsize',20,'interpreter','latex')
-ylabel('$x(s)$','fontsize',20,'interpreter','latex')
-title('Random Walk DNA chr1:1000001-6100001','fontsize',20,'interpreter','latex')
-
 
 %% generate bash script
 OD_DDA=sprintf('DDA_OUT',ChrNr,Resolution);
@@ -100,7 +96,7 @@ FN_DDA_MAT=sprintf('DDA_OUT/ERGODICITY.mat');
 
 if exist(FN_DDA_MAT,'file')==0
     unix(sprintf('touch %s',FN_DDA_MAT))
-    ERGODICITY=nan(NrBins,NrBins,N_TAU);
+    DNA_DDA=nan(NrBins,NrBins,N_TAU);
     
     Q_ST=load(sprintf('DDA_OUT/Chr%d_%d-%d__%d.ascii_ST',ChrNr,BINs(1,2),BINs(1,3),BINs(1,1)));
     T=Q_ST(:,1:2);WN=size(T,1);
@@ -122,20 +118,48 @@ if exist(FN_DDA_MAT,'file')==0
                 q_CT=nanmean(q_CT,2);
                 
                 erg=nanmean(abs(q_ST/q_CT-1));
-                ERGODICITY(BINs(w,1),BINs(S,1),tt)=erg;
-                ERGODICITY(BINs(S,1),BINs(w,1),tt)=erg;
+                DNA_DDA(BINs(w,1),BINs(S,1),tt)=erg;
+                DNA_DDA(BINs(S,1),BINs(w,1),tt)=erg;
             end
         end
         w
     end
-    save(FN_DDA_MAT,'ERGODICITY','-v7.3')
+    save(FN_DDA_MAT,'DNA_DDA','-v7.3')
 end
 
 load(FN_DDA_MAT,'ERGODICITY')
-ERGODICITY=ERGODICITY(First_NonZero_Bin:end,First_NonZero_Bin:end,:);
-tau=[2 4];
+DNA_DDA=ERGODICITY(First_NonZero_Bin:end,First_NonZero_Bin:end,:);
+tau=[3 6];% load DNA-DDA matrix for GM12878 cell line
 tau=find(TAU_LIST(:,1)==tau(1)&TAU_LIST(:,2)==tau(2));
 
-figure;imagesc(log(ERGODICITY(:,:,tau)));axis square;colormap jet
+DNA_DDA=DNA_DDA(:,:,tau);
+
+%% matrix post processing
+if DNA_DDA~=0
+    DNA_DDA(DNA_DDA,:)=nan;
+    DNA_DDA(:,DNA_DDA)=nan;
+end
+
+%map high to low values
+[~,idx_D] = sort(DNA_DDA(:), 'descend');
+[~,idx_A] = sort(DNA_DDA(:), 'ascend');
+idx_NAN=find(isnan(DNA_DDA));
+DNA_DDA(idx_D(~ismember(idx_D,idx_NAN)))=DNA_DDA(idx_A(~ismember(idx_A,idx_NAN)));
+
+%fill in diagonal with neighboring values
+DNA_DDA(1,1)=DNA_DDA(1,2);
+for d=2:size(DNA_DDA,1)
+    DNA_DDA(d,d)=DNA_DDA(d-1,d);
+end
+
+%take log
+DNA_DDA(DNA_DDA==0)=nan;
+DNA_DDA=(log(DNA_DDA));
+DNA_DDA(isnan(DNA_DDA))=0;
+
+
+figure;subplot(1,2,1);imagesc(DNA_DDA);axis square;colormap jet;colorbar;title('DNA-DDA contact map')
+subplot(1,2,2);imagesc(log(HiCM(BINs(1,1):BINs(end,1),BINs(1,1):BINs(end,1))));axis square;colormap jet;colorbar;title('HiC contact map')
+
 
 

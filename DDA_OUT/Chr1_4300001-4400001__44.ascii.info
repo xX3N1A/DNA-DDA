@@ -1,0 +1,12 @@
+./run_DDA_ASCII_DNA -TAU_file DELAY_FILE -DATA_FN ./RandomWalk_Chr1.ascii -OUT_FN DDA_OUT/Chr1_4300001-4400001__44.ascii -WL 99942 -WS 99942 -SELECT 0 1 0 0 -CT_CH_list 44 45 44 46 44 47 44 48 44 49 44 50 44 51 44 52 44 53 44 54 44 55 44 56 
+
+DDA_OUT/Chr1_4300001-4400001__44.ascii.info
+DDA_OUT/Chr1_4300001-4400001__44.ascii_CT
+
+CH_list   :  44  45  46  47  48  49  50  51  52  53  54  55  56 
+INDEX     :   1   2   3   4   5   6   7   8   9  10  11  12  13 
+
+CT CH_list:  44  45  44  46  44  47  44  48  44  49  44  50  44  51  44  52  44  53  44  54  44  55  44  56 
+INDEX     :   1   2   1   3   1   4   1   5   1   6   1   7   1   8   1   9   1  10   1  11   1  12   1  13 
+
+

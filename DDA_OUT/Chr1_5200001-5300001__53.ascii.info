@@ -1,0 +1,12 @@
+./run_DDA_ASCII_DNA -TAU_file DELAY_FILE -DATA_FN ./RandomWalk_Chr1.ascii -OUT_FN DDA_OUT/Chr1_5200001-5300001__53.ascii -WL 99942 -WS 99942 -SELECT 0 1 0 0 -CT_CH_list 53 54 53 55 53 56 
+
+DDA_OUT/Chr1_5200001-5300001__53.ascii.info
+DDA_OUT/Chr1_5200001-5300001__53.ascii_CT
+
+CH_list   :  53  54  55  56 
+INDEX     :   1   2   3   4 
+
+CT CH_list:  53  54  53  55  53  56 
+INDEX     :   1   2   1   3   1   4 
+
+
