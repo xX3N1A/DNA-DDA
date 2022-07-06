@@ -1,7 +1,8 @@
-%% load chromosome information
+%% load variables
 load('vars.mat')
 
-%% make DNA RW
+%% generate **1D DNA walk** and save to file <FN_ASCII>
+
 makeTS=0;
 ASCII_DIR=('.');
 FN_ASCII=(sprintf('%s/RandomWalk_Chr1.ascii',ASCII_DIR));
@@ -10,8 +11,8 @@ if makeTS==1
     DATA=load(sprintf('../../../data/PERL_SEQ_ALL/Chr%d_BINALL.perl.ascii',ChrNr));
     unix(sprintf('touch %s',FN_ASCII))
     TS=nan(Resolution,50);
-    for w_x=1:size(BINs_all,1)
-        X=DATA(BINs_all(w_x,2):(BINs_all(w_x,3)-1));
+    for w_x=1:size(BINs_ALL,1)
+        X=DATA(BINs_ALL(w_x,2):(BINs_ALL(w_x,3)-1));
         if sum(X)~=0
             TS(1,w_x)=X(1);
             for n=2:length(X)
@@ -38,16 +39,17 @@ if makeTS==1
     h=plot(X(:,:),'linewidth',1);
     xlabel('steps [nucleotides]','fontsize',20,'interpreter','latex')
     ylabel('$x(s)$','fontsize',20,'interpreter','latex')
-    title('Random Walk DNA chr1:1000001-6100001','fontsize',20,'interpreter','latex')
+    title(sprintf('Random Walk DNA chr1:%d-%d',BINs(1,2),BINs(end,3)),'fontsize',20,'interpreter','latex')
 end
 
-%% generate bash script
+%% generate bash script to run DDA
 OD_DDA=sprintf('DDA_OUT',ChrNr,Resolution);
 
 BIN_VEC=(1:size(BINs,1));
 BIN_VEC=BIN_VEC(randperm(length(BIN_VEC)));
 
-TAU_LIST=load('DELAY_FILE');N_TAU=size(TAU_LIST,1);
+TAU_FN='DELAY_FILE';
+TAU_LIST=load(TAU_FN);N_TAU=size(TAU_LIST,1);
 
 % Window lenght and window shift
 WL=Resolution-max(TAU_LIST(:))-2*4; % one calculation per 100kbp window (-2*4 implies data points needed for numerical derivative)
@@ -90,7 +92,7 @@ for w=BIN_VEC
     end
 end
 unix(sprintf('chmod u+x %s',FID));
-%% outputs
+%% generate DNA-DDA contact matrix from DDA outputs
 
 FN_DDA_MAT=sprintf('DDA_OUT/ERGODICITY.mat');
 
@@ -135,10 +137,6 @@ tau=find(TAU_LIST(:,1)==tau(1)&TAU_LIST(:,2)==tau(2));
 DNA_DDA=DNA_DDA(:,:,tau);
 
 %% matrix post processing
-if DNA_DDA~=0
-    DNA_DDA(DNA_DDA,:)=nan;
-    DNA_DDA(:,DNA_DDA)=nan;
-end
 
 %map high to low values
 [~,idx_D] = sort(DNA_DDA(:), 'descend');
@@ -158,8 +156,8 @@ DNA_DDA=(log(DNA_DDA));
 DNA_DDA(isnan(DNA_DDA))=0;
 
 
-figure;subplot(1,2,1);imagesc(DNA_DDA);axis square;colormap jet;colorbar;title('DNA-DDA contact map')
-subplot(1,2,2);imagesc(log(HiCM(BINs(1,1):BINs(end,1),BINs(1,1):BINs(end,1))));axis square;colormap jet;colorbar;title('HiC contact map')
+figure;subplot(1,2,1);imagesc(DNA_DDA);axis square;colormap jet;colorbar;title('DNA-DDA contact map GM12878')
+subplot(1,2,2);imagesc(log(HiCM(BINs(1,1):BINs(end,1),BINs(1,1):BINs(end,1))));axis square;colormap jet;colorbar;title('HiC contact map GM12878')
 
 
 

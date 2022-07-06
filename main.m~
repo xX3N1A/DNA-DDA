@@ -1,7 +1,8 @@
-%% load chromosome information
+%% load variables
 load('vars.mat')
 
-%% make DNA RW
+%% generate **1D DNA walk** and save to file <FN_ASCII>
+
 makeTS=0;
 ASCII_DIR=('.');
 FN_ASCII=(sprintf('%s/RandomWalk_Chr1.ascii',ASCII_DIR));
@@ -10,8 +11,8 @@ if makeTS==1
     DATA=load(sprintf('../../../data/PERL_SEQ_ALL/Chr%d_BINALL.perl.ascii',ChrNr));
     unix(sprintf('touch %s',FN_ASCII))
     TS=nan(Resolution,50);
-    for w_x=1:size(BINs_all,1)
-        X=DATA(BINs_all(w_x,2):(BINs_all(w_x,3)-1));
+    for w_x=1:size(BINs_ALL,1)
+        X=DATA(BINs_ALL(w_x,2):(BINs_ALL(w_x,3)-1));
         if sum(X)~=0
             TS(1,w_x)=X(1);
             for n=2:length(X)
@@ -41,13 +42,14 @@ if makeTS==1
     title('Random Walk DNA chr1:1000001-6100001','fontsize',20,'interpreter','latex')
 end
 
-%% generate bash script
+%% generate bash script to run DDA
 OD_DDA=sprintf('DDA_OUT',ChrNr,Resolution);
 
 BIN_VEC=(1:size(BINs,1));
 BIN_VEC=BIN_VEC(randperm(length(BIN_VEC)));
 
-TAU_LIST=load('DELAY_FILE');N_TAU=size(TAU_LIST,1);
+TAU_FN='DELAY_FILE';
+TAU_LIST=load(TAU_FN);N_TAU=size(TAU_LIST,1);
 
 % Window lenght and window shift
 WL=Resolution-max(TAU_LIST(:))-2*4; % one calculation per 100kbp window (-2*4 implies data points needed for numerical derivative)
@@ -90,7 +92,7 @@ for w=BIN_VEC
     end
 end
 unix(sprintf('chmod u+x %s',FID));
-%% outputs
+%% generate DNA-DDA contact matrix from DDA outputs
 
 FN_DDA_MAT=sprintf('DDA_OUT/ERGODICITY.mat');
 
@@ -129,49 +131,33 @@ end
 
 load(FN_DDA_MAT,'ERGODICITY')
 DNA_DDA=ERGODICITY(First_NonZero_Bin:end,First_NonZero_Bin:end,:);
-tau=[3 6];% load DNA-DDA matrix fo
+tau=[3 6];% load DNA-DDA matrix for GM12878 cell line
 tau=find(TAU_LIST(:,1)==tau(1)&TAU_LIST(:,2)==tau(2));
 
-DNA_DDA_GM12878=DNA_DDA(:,:,tau);
-
-figure;imagesc(log(DNA_DDA_GM12878));axis square;colormap jet;colorbar
+DNA_DDA=DNA_DDA(:,:,tau);
 
 %% matrix post processing
-if DNA_DDA_GM12878~=0
-    DNA_DDA_GM12878(DNA_DDA_GM12878,:)=nan;
-    DNA_DDA_GM12878(:,DNA_DDA_GM12878)=nan;
-end
 
 %map high to low values
-[~,idx_D] = sort(DNA_DDA_GM12878(:), 'descend');
-[~,idx_A] = sort(DNA_DDA_GM12878(:), 'ascend');
-idx_NAN=find(isnan(DNA_DDA_GM12878));
-DNA_DDA_GM12878(idx_D(~ismember(idx_D,idx_NAN)))=DNA_DDA_GM12878(idx_A(~ismember(idx_A,idx_NAN)));
+[~,idx_D] = sort(DNA_DDA(:), 'descend');
+[~,idx_A] = sort(DNA_DDA(:), 'ascend');
+idx_NAN=find(isnan(DNA_DDA));
+DNA_DDA(idx_D(~ismember(idx_D,idx_NAN)))=DNA_DDA(idx_A(~ismember(idx_A,idx_NAN)));
 
-%map high to low values
-DNA_DDA_GM12878(1,1)=DNA_DDA_GM12878(1,2);
-for d=2:size(DNA_DDA_GM12878,1)
-    DNA_DDA_GM12878(d,d)=DNA_DDA_GM12878(d-1,d);
+%fill in diagonal with neighboring values
+DNA_DDA(1,1)=DNA_DDA(1,2);
+for d=2:size(DNA_DDA,1)
+    DNA_DDA(d,d)=DNA_DDA(d-1,d);
 end
 
-if ~isnan(LOG_E)
-    DNA_DDA_GM12878(DNA_DDA_GM12878==0)=nan;
-    DNA_DDA_GM12878=(log(DNA_DDA_GM12878));
-    %DNA_DDA_GM12878(isnan(DNA_DDA_GM12878))=nanmin(DNA_DDA_GM12878(:));
-end
-
-%     mu=nanmean(DNA_DDA_GM12878(:));
-%     sigma=nanstd(DNA_DDA_GM12878(:));
-%     DNA_DDA_GM12878(DNA_DDA_GM12878<(mu-2*sigma))=(nanmean(DNA_DDA_GM12878(:)));
-%     DNA_DDA_GM12878(isnan(DNA_DDA_GM12878))=nanmin(DNA_DDA_GM12878(:));
-
-if ~isnan(FSPECIAL_E)
-    h = fspecial('average',FSPECIAL_E);
-    DNA_DDA_GM12878 = filter2(h, DNA_DDA_GM12878);
-end
-DNA_DDA_GM12878(isnan(DNA_DDA_GM12878))=0;%nanmin(DNA_DDA_GM12878(:));
+%take log
+DNA_DDA(DNA_DDA==0)=nan;
+DNA_DDA=(log(DNA_DDA));
+DNA_DDA(isnan(DNA_DDA))=0;
 
 
+figure;subplot(1,2,1);imagesc(DNA_DDA);axis square;colormap jet;colorbar;title('DNA-DDA contact map GM12878')
+subplot(1,2,2);imagesc(log(HiCM(BINs(1,1):BINs(end,1),BINs(1,1):BINs(end,1))));axis square;colormap jet;colorbar;title('HiC contact map')
 
 
 
