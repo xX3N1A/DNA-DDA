@@ -70,20 +70,18 @@ The general steps of DNA-DDA are:
 
     ![DNA_DDA](/Figures/ContactMaps.svg)
 
- 10. calling A/B compartments (eg with HiCExplorer https://github.com/deeptools/HiCExplorer)
+
+10. calling A/B compartments (eg with HiCExplorer https://github.com/deeptools/HiCExplorer)
 
      * convert matrix to **homer** format (http://homer.ucsd.edu/homer/interactions/) 
-     * `hicConvertFormat` to convert **homer** to **h5**
-     * `hicNormalize --normalize norm_range` to normalize to 0 and 1
-     * `hicPCA --method "dist_norm" --ignoreMaskedBins --pearsonMatrix <OUT_FN.h5>` to generate pearson correlation matrix  
-     * `hicConvertFormat --outputFormat ginteractions` to generate tsv
-     * in MATAB `pca(DNA_DDA_PEARSON)`
-
-
-    ![PCs](/Figures/PCs.svg)
+       * `hicConvertFormat` to convert **homer** to **h5**
+       * `hicNormalize --normalize norm_range` to normalize to 0 and 1
+       * `hicPCA --method "dist_norm" --ignoreMaskedBins --pearsonMatrix <OUT_FN.h5>` to generate pearson correlation matrix  
+       * `hicConvertFormat --outputFormat ginteractions` to generate tsv
+       * in MATAB `pca(DNA_DDA_PEARSON)`
 
     ![DNA_DDA_P](/Figures/PearsonMatrices.svg)
-
+    ![PCs](/Figures/PCs.svg)
 
 
 
