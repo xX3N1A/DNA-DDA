@@ -1,0 +1,12 @@
+./run_DDA_ASCII_DNA -TAU_file DELAY_FILE -DATA_FN ../RandomWalk_Chr22.ascii -OUT_FN DDA_OUT/Chr22_48600001-48700001__487.ascii -WL 99942 -WS 99942 -SELECT 0 1 0 0 -CT_CH_list 487 488 487 489 
+
+DDA_OUT/Chr22_48600001-48700001__487.ascii.info
+DDA_OUT/Chr22_48600001-48700001__487.ascii_CT
+
+CH_list   : 487 488 489 
+INDEX     :   1   2   3 
+
+CT CH_list: 487 488 487 489 
+INDEX     :   1   2   1   3 
+
+
