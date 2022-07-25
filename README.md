@@ -4,7 +4,7 @@
 
 ## Overview
 
-DNA-DDA has been adapted from the nonlinear time series analysis techniq dynamical-ergodicity delay differential analysis (DE DDA) ( https://doi.org/11.1063/5.0063724 ), in order to predict chromosomal contacts from a reference sequence. This page includes an example for the first 50 non-empty bins of chromosome 22 at 100kbp resolution (chr22:15200001-48900001). 
+DNA-DDA has been adapted from the nonlinear time series analysis techniq dynamical-ergodicity delay differential analysis (DE DDA) ( Lainscsek et. al https://doi.org/10.1063/5.0063724 ), in order to predict chromosomal contacts from a reference sequence. This page includes an example for the first 50 non-empty bins of chromosome 22 at 100kbp resolution (chr22:15200001-48900001). 
 
 The general steps of DNA-DDA are:  
  1. convert the reference sequence into a random walk DNA representation  
@@ -12,7 +12,7 @@ The general steps of DNA-DDA are:
  3. combine ST and CT errors computed in step 2. to DE DDA to get DNA-DDA contact map  
  4. obtained DNA-DDA contact maps can be used as HiC-contact maps.
 
-![DNA-DDA procedure](/Figures/DNA_DDA_precedure.svg)
+![DNA-DDA procedure](/Figures/DNA_DDA_Procedure.svg)
 
 
 ## Requirements
@@ -46,7 +46,7 @@ The general steps of DNA-DDA are:
 	 
     * <FN_ASCII> has dimension **Resolution**$\times$**Nr_of_Bins** 
 	    
-    ![DNA_1DRW](/Figures/DNA_RW.svg)
+    ![DNA_1DRW](/Figures/DNA_RW_ink.svg)
 
 
  6. generate bash script to run DDA
@@ -68,7 +68,7 @@ The general steps of DNA-DDA are:
     * take logarithm    
     * plot
 
-    ![DNA_DDA](/Figures/ContactMaps.svg)
+    ![DNA_DDA](/Figures/ContactMaps_ink.svg)
 
 
 10. calling A/B compartments (eg with HiCExplorer https://github.com/deeptools/HiCExplorer)
@@ -80,8 +80,10 @@ The general steps of DNA-DDA are:
        * `hicConvertFormat --outputFormat ginteractions` to generate tsv
        * in MATAB `pca(DNA_DDA_PEARSON)`
 
-    ![DNA_DDA_P](/Figures/PearsonMatrices.svg)
-    ![PCs](/Figures/PCs.svg)
+    ![DNA_DDA_P](/Figures/Pearson_Matrices_ink.svg)
+
+
+    ![PCs](/Figures/PCs_ink.svg)
 
 
 

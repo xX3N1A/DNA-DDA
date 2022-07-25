@@ -1,5 +1,6 @@
 %% load variables
 load('vars.mat')
+FIG_PATH='Figures';
 
 EXCLUDE(EXCLUDE==0)=[];EXCLUDE=unique(EXCLUDE);
 if EXCLUDE~=0
@@ -14,6 +15,7 @@ if ~isempty(EXCLUDE_PCA)
     HiCP(EXCLUDE_PCA(1):EXCLUDE_PCA(2),:)=[];
     HiCP(:,EXCLUDE_PCA(1):EXCLUDE_PCA(2))=[];
 end
+
 %% generate **1D DNA walk** and save to file <FN_ASCII>
 
 makeTS=0;
@@ -150,14 +152,11 @@ tau=[3 6];% load DNA-DDA matrix for GM12878 cell line
 tau_f=find(TAU_LIST(:,1)==tau(1)&TAU_LIST(:,2)==tau(2));
 DNA_DDA=DNA_DDA(:,:,tau_f);
 
+%% matrix post processing
+
 DNA_DDA(EXCLUDE,:)=nan;
 DNA_DDA(:,EXCLUDE)=nan;
 
-DNA_DDA=DNA_DDA(BINs(:,1),BINs(:,1));
-
-%DNA_DDA(DNA_DDA==0)=nan;
-
-%% matrix post processing
 %map high to low values
 [~,idx_D] = sort(DNA_DDA(:), 'descend');
 [~,idx_A] = sort(DNA_DDA(:), 'ascend');
@@ -173,50 +172,42 @@ end
 %take log
 DNA_DDA(DNA_DDA==0)=nan;
 DNA_DDA=(log(DNA_DDA));
+%% Use HiCExplorer to normalize and generate DNA-DDA-Pearson Maps
+% https://hicexplorer.readthedocs.io/en/latest/index.html
 
-figure(101);clf
-subplot(1,2,1);b=imagesc(DNA_DDA);axis square;colormap jet;colorbar;title('DNA-DDA contact map GM12878');%set(b,'AlphaData',~isnan(DNA_DDA))
-subplot(1,2,2);b=imagesc(log(HiCM));axis square;colormap jet;colorbar;title('HiC contact map GM12878');%set(b,'AlphaData',~isnan(log(HiCM)))
-
-
-%% Pearaon Correlation Matrices
 DNA_DDA(isnan(DNA_DDA))=0;
 
 BED_FILE='GM12878_GSM733772.V2.GRCh38.bed';%ChIP-Seq
 BED_FILE_GENE='Homo_sapiens.GRCh38.103.bed';
 HOME_TAG_DIR='HiCExplorer/TAG';
 HiCExplorer_OUT=sprintf('HiCExplorer/DNA-DDA.%d.homer',Resolution);
-matlabM_to_homer(BINs,ChrNr,HOME_TAG_DIR,HiCExplorer_OUT,DNA_DDA)
+matlabM_to_homer(BINs_all,ChrNr,HOME_TAG_DIR,HiCExplorer_OUT,DNA_DDA)
 
 IN_h5=strrep(HiCExplorer_OUT,'homer','h5');
-unix(sprintf('hicConvertFormat --matrices %s --outFileName %s --inputFormat homer --outputFormat h5',HiCExplorer_OUT,IN_h5));
+unix(sprintf('hicConvertFormat --matrices %s --outFileName %s --inputFormat homer --outputFormat h5'...
+    ,HiCExplorer_OUT,IN_h5));
 IN_norm_h5=strrep(IN_h5,'DDA','DDA.norm');
-unix(sprintf('hicNormalize -m %s --normalize norm_range -o %s',IN_h5,IN_norm_h5));
+unix(sprintf('hicNormalize -m %s --normalize norm_range -o %s',...
+    IN_h5,IN_norm_h5));
 Pearson_h5=strrep(IN_norm_h5,'norm','norm.pearson');
 unix(sprintf('hicPCA --matrix %s --whichEigenvectors "1" --method "dist_norm" --ignoreMaskedBins --extraTrack %s --pearsonMatrix %s --format bigwig --outputFileName HiCExplorer/pca.bw',...
     IN_norm_h5,BED_FILE_GENE,Pearson_h5));
-unix(sprintf('hicConvertFormat --matrices %s --inputFormat h5 --outFileName %s --outputFormat ginteractions',IN_norm_h5,strrep(IN_norm_h5,'.h5','')));
-unix(sprintf('hicConvertFormat --matrices %s --inputFormat h5 --outFileName %s --outputFormat ginteractions',Pearson_h5,strrep(Pearson_h5,'.h5','')));
+unix(sprintf('hicConvertFormat --matrices %s --inputFormat h5 --outFileName %s --outputFormat ginteractions',...
+    IN_norm_h5,strrep(IN_norm_h5,'.h5','')));
+unix(sprintf('hicConvertFormat --matrices %s --inputFormat h5 --outFileName %s --outputFormat ginteractions',...
+    Pearson_h5,strrep(Pearson_h5,'.h5','')));
 
 tsv_IN=sprintf('%s',strrep(IN_norm_h5,'.h5','.tsv'));
 csv_M_OUT=sprintf('%s',strrep(IN_norm_h5,'.h5','.csv'));
-[DNA_DDA_1]=hiCtsv_to_MATLABcsv(Resolution,ChrSize,tsv_IN,csv_M_OUT);
-DNA_DDA_1=load(csv_M_OUT);
-DNA_DDA_1=DNA_DDA_1(BINs(:,1),BINs(:,1));
+[DNA_DDA]=hiCtsv_to_MATLABcsv(Resolution,ChrSize,tsv_IN,csv_M_OUT);
+DNA_DDA=load(csv_M_OUT);
+DNA_DDA=DNA_DDA(BINs(:,1),BINs(:,1));
 
-figure(101);clf;subplot(1,2,1);imagesc(DNA_DDA_1);axis square;colormap jet;colorbar;title('DNA-DDA contact map GM12878')
-subplot(1,2,2);imagesc(log(HiCM));axis square;colormap jet;colorbar;title('HiC contact map GM12878')
+figure('units','normalized','outerposition',[0 0 1 1]);
+subplot(1,2,1);imagesc(log(HiCM));axis square;colormap jet;colorbar;title('HiC contact map Chr22 GM12878');
+subplot(1,2,2);imagesc(DNA_DDA);axis square;colormap jet;colorbar;title('DNA-DDA contact map Chr22 GM12878');
+saveas(gcf,sprintf('%s/ContactMaps.svg',FIG_PATH))
 
-
-% figure(2);clf;subplot(1,2,1);imagesc(DNA_DDA);axis square;colormap jet;colorbar;title('DNA-DDA contact map GM12878')
-% subplot(1,2,2);imagesc(DNA_DDA_1);axis square;colormap jet;colorbar;title('DNA-DDA contact map post HiCExplorer GM12878')
-
-tsv_IN=sprintf('%s',strrep(IN_norm_h5,'.h5','.tsv'));
-csv_M_OUT=sprintf('%s',strrep(IN_norm_h5,'.h5','.csv'));
-%if exist(csv_M_OUT,'file')==0,
-[DNA_DDA_1]=hiCtsv_to_MATLABcsv(Resolution,ChrSize,tsv_IN,csv_M_OUT);%end
-DNA_DDA_1=load(csv_M_OUT);
-DNA_DDA_1=DNA_DDA_1(BINs(:,1),BINs(:,1));
 
 tsv_IN=sprintf('%s',strrep(Pearson_h5,'.h5','.tsv'));
 csv_M_OUT=sprintf('%s',strrep(Pearson_h5,'.h5','.csv'));
@@ -225,18 +216,17 @@ csv_M_OUT=sprintf('%s',strrep(Pearson_h5,'.h5','.csv'));
 DNA_DDA_P=load(csv_M_OUT);
 DNA_DDA_P=DNA_DDA_P(BINs(:,1),BINs(:,1));
 
-
-if ~isempty(EXCLUDE_PCA)
+if ~isempty(EXCLUDE_PCA) % EXCLUDE_PCA 
     DNA_DDA_P(EXCLUDE_PCA(1):EXCLUDE_PCA(2),:)=[];
     DNA_DDA_P(:,EXCLUDE_PCA(1):EXCLUDE_PCA(2))=[];
 end
 
-figure(3);clf;
-subplot(1,2,1);b=imagesc(DNA_DDA_P);axis square;colormap jet;colorbar;title('DNA-DDA Pearson correlation map GM12878');set(b,'AlphaData',~isnan(DNA_DDA_P))
-subplot(1,2,2);b=imagesc(HiCP);axis square;colormap jet;colorbar;title('HiC Pearson correlation matrix GM12878');
-
+s=unique(sort(DNA_DDA_P(:)));
+figure('units','normalized','outerposition',[0 0 1 1]);clf;
+subplot(1,2,1);b=imagesc(HiCP);axis square;colormap jet;colorbar;title('HiC Pearson correlation matrix GM12878');
+subplot(1,2,2);b=imagesc(DNA_DDA_P,[s(2) 1]);axis square;colormap jet;colorbar;title('DNA-DDA Pearson correlation map GM12878');set(b,'AlphaData',~isnan(DNA_DDA_P))
+saveas(gcf,sprintf('%s/Pearson_Matrices.svg',FIG_PATH))
 %% calling A/B compartments 
-
 HiCP(isnan(HiCP))=0;  
 DNA_DDA_P(isnan(DNA_DDA_P))=0;  
 
@@ -247,17 +237,17 @@ EV_DDA=movmean(EV_DDA,5);
 [EV_HiC,whichPC_HiC]=Norm_PC(EV_HiC,BED_FILE,ChrNr,BINs,EXCLUDE_PCA);
 [EV_DDA,whichPC_DDA]=Norm_PC(EV_DDA,BED_FILE,ChrNr,BINs,EXCLUDE_PCA);
 
+EXCLUDE_PCA
 [C,~,AUC_AB,ACC,F1] = perf_metrics(EV_DDA,EV_HiC);
 
 sprintf('Chr%d r=%4.2f AUC=%4.2f ACC=%4.2f F1=%4.2f PC_hic=%d PC_dda=%d',ChrNr,C,AUC_AB,ACC,F1,whichPC_HiC,whichPC_DDA)
 
-
-figure;
+figure('units','normalized','outerposition',[-0.98 0.69 0.93 0.23]);clf;
 plot(EV_HiC,'k','linewidth',1.5);axis tight;hold on;plot(EV_DDA,'m','linewidth',.8);set(gca,'FontSize',20)
 xticks([1 size(HiCP,1)/2 size(HiCP,1)]);
+saveas(gcf,sprintf('%s/PCs.svg',FIG_PATH))
 
 
-
-
+close all
 
 

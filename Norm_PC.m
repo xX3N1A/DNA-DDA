@@ -3,17 +3,15 @@ a1=0;a2=0.5;
 b1=0.5;b2=1;
 
 FN=strrep(BED_FILE,'.bed','.mat');
-%if exist(FN,'file')==0
+if exist(FN,'file')==0
     [H3K4me1_DENSITY] = H3K4me1Density(BINs,ChrNr,BED_FILE);H3K4me1_DENSITY=H3K4me1_DENSITY(:,2);
     H3K4me1_DENSITY= (H3K4me1_DENSITY-min(H3K4me1_DENSITY))/(max(H3K4me1_DENSITY) - min(H3K4me1_DENSITY));
     save(FN,'H3K4me1_DENSITY');
-%end
+end
 load(FN);
 if ~isempty(EXCLUDE_PCA)
-            H3K4me1_DENSITY(EXCLUDE_PCA(1):EXCLUDE_PCA(2))=[];
+  H3K4me1_DENSITY(EXCLUDE_PCA(1):EXCLUDE_PCA(2))=[];
 end
-
-
 
 Nr_consider=3;
 
