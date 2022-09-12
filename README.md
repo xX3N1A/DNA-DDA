@@ -4,7 +4,7 @@
 
 ## Overview
 
-DNA-DDA has been adapted from the nonlinear time series analysis techniq dynamical-ergodicity delay differential analysis (DE DDA) ( Lainscsek et. al https://doi.org/10.1063/5.0063724 ), in order to predict chromosomal contacts from a reference sequence. This page includes an example for the first 50 non-empty bins of chromosome 22 at 100kbp resolution (chr22:15200001-48900001). 
+DNA-DDA has been adapted from the nonlinear time series analysis technique dynamical-ergodicity delay differential analysis (DE DDA) ( Lainscsek et. al https://doi.org/10.1063/5.0063724 ), in order to predict chromosomal contacts from a reference sequence. This page includes an example for predicting contacts of chromosome 22 at 100kbp resolution.
 
 The general steps of DNA-DDA are:  
  1. convert the reference sequence into a random walk DNA representation  
