@@ -1,4 +1,4 @@
-function [PC_OUT,whichPC] = Norm_PC(PC_IN,BED_FILE,ChrNr,BINs,EXCLUDE_PCA)
+function [PC_OUT,whichPC] = Norm_PC(PC_IN,BED_FILE,ChrNr,BINs)
 a1=0;a2=0.5;
 b1=0.5;b2=1;
 
@@ -9,9 +9,6 @@ if exist(FN,'file')==0
     save(FN,'H3K4me1_DENSITY');
 end
 load(FN);
-if ~isempty(EXCLUDE_PCA)
-  H3K4me1_DENSITY(EXCLUDE_PCA(1):EXCLUDE_PCA(2))=[];
-end
 
 Nr_consider=3;
 
@@ -22,8 +19,6 @@ for k=1:Nr_consider
     
     PC_IN_1=PC_IN(:,k);
     PC_IN_1=filloutliers(PC_IN_1,'nearest');
-    % center around zero mean and unit var
-    PC_IN_1 = (PC_IN_1-mean(PC_IN_1))/std(PC_IN_1);
     
     C=corrcoef(PC_IN_1,H3K4me1_DENSITY);
     CC(k)=C(1,2);
@@ -31,6 +26,9 @@ for k=1:Nr_consider
     if CC(k)<0
         PC_IN_1=-PC_IN_1;
     end
+    
+    % center around zero mean and unit var
+    PC_IN_1 = (PC_IN_1-mean(PC_IN_1))/std(PC_IN_1);
     
     EV=PC_IN_1;X=nan(size(EV));
     for n=1:length(EV)

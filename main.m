@@ -1,27 +1,15 @@
 %% load variables
+close all;clear all
 load('vars.mat')
 FIG_PATH='Figures';
 
-EXCLUDE(EXCLUDE==0)=[];EXCLUDE=unique(EXCLUDE);
-if EXCLUDE~=0
-    HiCM(EXCLUDE,:)=nan;HiCM(:,EXCLUDE)=nan;
-    HiCP(EXCLUDE,:)=nan;HiCP(:,EXCLUDE)=nan;
-end
-
-HiCP=HiCP(BINs(:,1),BINs(:,1));
-HiCM=HiCM(BINs(:,1),BINs(:,1));
-
-if ~isempty(EXCLUDE_PCA)
-    HiCP(EXCLUDE_PCA(1):EXCLUDE_PCA(2),:)=[];
-    HiCP(:,EXCLUDE_PCA(1):EXCLUDE_PCA(2))=[];
-end
-
+HiCM(EXCLUDE,:)=[]; HiCM(:,EXCLUDE)=[];
+HiCP(EXCLUDE,:)=[]; HiCP(:,EXCLUDE)=[];
 %% generate **1D DNA walk** and save to file <FN_ASCII>
 
 makeTS=0;
 ASCII_DIR=('..');
 FN_ASCII=(sprintf('%s/RandomWalk_Chr22.ascii',ASCII_DIR));
-% vergleiche ascii file
 if makeTS==1
     DATA=load(sprintf('../../../../data/PERL_SEQ_ALL/Chr%d_BINALL.perl.ascii',ChrNr));
     unix(sprintf('touch %s',FN_ASCII))
@@ -52,17 +40,24 @@ if makeTS==1
     
     X=load(FN_ASCII);X=X(:,BINs(:,1));
     h=plot(X(:,:),'linewidth',1);
-    xlabel('steps [nucleotides]','fontsize',20,'interpreter','latex')
-    ylabel('$x(s)$','fontsize',20,'interpreter','latex')
+    set(gca,'Fontsize',20)
+    xlabel('steps [nucleotides]','fontsize',30,'interpreter','latex')
+    ylabel('$x(s)$','FontSize',30,'interpreter','latex')
     title(sprintf('Random Walk DNA chr%d:%d-%d',ChrNr,BINs(1,2),BINs(end,3)),'fontsize',20,'interpreter','latex')
+    %saveas(gcf,sprintf('Figures/DNA_RW.svg'));
 end
 
 %% generate bash script to run DDA
 OD_DDA=sprintf('DDA_OUT',ChrNr,Resolution);
 
-BIN_VEC=(1:size(BINs,1));
+d=find(EXCLUDE(2:end)-EXCLUDE(1:end-1)~=1);
+First_Last=[min(d)+1 max(EXCLUDE)-1];
+NrBins_ALL=size(BINs,1);
+BINs=BINs(First_Last(1):First_Last(2),:);
+NrBins=size(BINs,1);
+BIN_VEC=(1:NrBins);
 BIN_VEC=BIN_VEC(randperm(length(BIN_VEC)));
-
+ST_BIN=BINs(1,1);
 TAU_FN='DELAY_FILE';
 TAU_LIST=load(TAU_FN);
 N_TAU=size(TAU_LIST,1);
@@ -70,16 +65,15 @@ N_TAU=size(TAU_LIST,1);
 % Window lenght and window shift
 WL=Resolution-max(TAU_LIST(:))-2*4; % one calculation per 100kbp window (-2*4 implies data points needed for numerical derivative)
 WS=WL;
-NrBins=size(BINs,1);ST_BIN=BINs(1,1);
 FID=sprintf('%s_runDDAbash.sh',date);
 unix(sprintf('touch %s',FID));
 file=fopen(FID,'w');
 fprintf(file,'#!/bin/bash\n\n');
 fclose(file);
+
 for w=BIN_VEC
     
     FN_DDA=sprintf('%s/Chr%d_%d-%d__%d.ascii',OD_DDA,ChrNr,BINs(w,2),BINs(w,3),BINs(w,1));
-    
     LIST=[ones(1,NrBins)*BINs(w,1); BINs(1,1):BINs(end,1)];
     LIST=LIST(:,w:end);
     LIST=reshape(LIST,1,2*(NrBins-w+1));
@@ -110,14 +104,14 @@ end
 unix(sprintf('chmod u+x %s',FID));
 %% generate DNA-DDA contact matrix from DDA outputs
 
-FN_DDA_MAT=sprintf('DDA_OUT/ERGODICITY_GM12878.mat');
-NrBINs=size(BINs_all,1);
+FN_DDA_MAT=sprintf('DDA_OUT/DNA_DDA_GM12878.mat');
 
 if exist(FN_DDA_MAT,'file')==0
     unix(sprintf('touch %s',FN_DDA_MAT))    
-    DNA_DDA=nan(NrBINs,NrBINs,N_TAU);
+    DNA_DDA=nan(NrBins_ALL,NrBins_ALL,N_TAU);
     
-    Q_ST=load(sprintf('DDA_OUT/Chr%d_%d-%d__%d.ascii_ST',ChrNr,BINs(1,2),BINs(1,3),BINs(1,1)));
+    f=find(BINs(:,1)==ST_BIN);
+    Q_ST=load(sprintf('DDA_OUT/Chr%d_%d-%d__%d.ascii_ST',ChrNr,BINs(f,2),BINs(f,3),BINs(1,1)));
     T=Q_ST(:,1:2);WN=size(T,1);
     Q_ST=Q_ST(:,3:end);
     N_SUB_OUTST=size(Q_ST,2)/N_TAU/4;
@@ -169,19 +163,28 @@ for d=2:size(DNA_DDA,1)
     DNA_DDA(d,d)=DNA_DDA(d-1,d);
 end
 
+for row=1:size(DNA_DDA,1)
+    for col=1:size(DNA_DDA,1)
+        if row~=col
+        DNA_DDA(row,col)= DNA_DDA(row,col).*(Resolution*abs(row-col))^(-1);
+        end
+    end
+end
+
 %take log
 DNA_DDA(DNA_DDA==0)=nan;
 DNA_DDA=(log(DNA_DDA));
+
 %% Use HiCExplorer to normalize and generate DNA-DDA-Pearson Maps
 % https://hicexplorer.readthedocs.io/en/latest/index.html
-
+load('vars.mat','BINs')
 DNA_DDA(isnan(DNA_DDA))=0;
 
 BED_FILE='GM12878_GSM733772.V2.GRCh38.bed';%ChIP-Seq
 BED_FILE_GENE='Homo_sapiens.GRCh38.103.bed';
 HOME_TAG_DIR='HiCExplorer/TAG';
 HiCExplorer_OUT=sprintf('HiCExplorer/DNA-DDA.%d.homer',Resolution);
-matlabM_to_homer(BINs_all,ChrNr,HOME_TAG_DIR,HiCExplorer_OUT,DNA_DDA)
+matlabM_to_homer(BINs,ChrNr,HOME_TAG_DIR,HiCExplorer_OUT,DNA_DDA)
 
 IN_h5=strrep(HiCExplorer_OUT,'homer','h5');
 unix(sprintf('hicConvertFormat --matrices %s --outFileName %s --inputFormat homer --outputFormat h5'...
@@ -201,6 +204,9 @@ tsv_IN=sprintf('%s',strrep(IN_norm_h5,'.h5','.tsv'));
 csv_M_OUT=sprintf('%s',strrep(IN_norm_h5,'.h5','.csv'));
 [DNA_DDA]=hiCtsv_to_MATLABcsv(Resolution,ChrSize,tsv_IN,csv_M_OUT);
 DNA_DDA=load(csv_M_OUT);
+
+f=ismember(BINs(:,1),EXCLUDE);
+BINs(f,:)=[];
 DNA_DDA=DNA_DDA(BINs(:,1),BINs(:,1));
 
 figure('units','normalized','outerposition',[0 0 1 1]);
@@ -214,17 +220,14 @@ csv_M_OUT=sprintf('%s',strrep(Pearson_h5,'.h5','.csv'));
 %if exist(csv_M_OUT,'file')==0,
     [DNA_DDA_P]=hiCtsv_to_MATLABcsv(Resolution,ChrSize,tsv_IN,csv_M_OUT);%end
 DNA_DDA_P=load(csv_M_OUT);
-DNA_DDA_P=DNA_DDA_P(BINs(:,1),BINs(:,1));
 
-if ~isempty(EXCLUDE_PCA) % EXCLUDE_PCA 
-    DNA_DDA_P(EXCLUDE_PCA(1):EXCLUDE_PCA(2),:)=[];
-    DNA_DDA_P(:,EXCLUDE_PCA(1):EXCLUDE_PCA(2))=[];
-end
+DNA_DDA_P=DNA_DDA_P(BINs(:,1),BINs(:,1));
 
 s=unique(sort(DNA_DDA_P(:)));
 figure('units','normalized','outerposition',[0 0 1 1]);clf;
 subplot(1,2,1);b=imagesc(HiCP);axis square;colormap jet;colorbar;title('HiC Pearson correlation matrix GM12878');
-subplot(1,2,2);b=imagesc(DNA_DDA_P,[s(2) 1]);axis square;colormap jet;colorbar;title('DNA-DDA Pearson correlation map GM12878');set(b,'AlphaData',~isnan(DNA_DDA_P))
+subplot(1,2,2);b=imagesc(DNA_DDA_P,[mean(s)-var(s) 1]);axis square;colormap jet;colorbar;title('DNA-DDA Pearson correlation map GM12878');
+set(b,'AlphaData',~isnan(DNA_DDA_P))
 saveas(gcf,sprintf('%s/Pearson_Matrices.svg',FIG_PATH))
 %% calling A/B compartments 
 HiCP(isnan(HiCP))=0;  
@@ -234,20 +237,21 @@ EV_HiC=pca(HiCP);
 EV_DDA=pca(DNA_DDA_P);
 EV_DDA=movmean(EV_DDA,5);
 
-[EV_HiC,whichPC_HiC]=Norm_PC(EV_HiC,BED_FILE,ChrNr,BINs,EXCLUDE_PCA);
-[EV_DDA,whichPC_DDA]=Norm_PC(EV_DDA,BED_FILE,ChrNr,BINs,EXCLUDE_PCA);
+[EV_HiC,whichPC_HiC]=Norm_PC(EV_HiC,BED_FILE,ChrNr,BINs);
+[EV_DDA,whichPC_DDA]=Norm_PC(EV_DDA,BED_FILE,ChrNr,BINs);
 
-EXCLUDE_PCA
 [C,~,AUC_AB,ACC,F1] = perf_metrics(EV_DDA,EV_HiC);
 
 sprintf('Chr%d r=%4.2f AUC=%4.2f ACC=%4.2f F1=%4.2f PC_hic=%d PC_dda=%d',ChrNr,C,AUC_AB,ACC,F1,whichPC_HiC,whichPC_DDA)
 
-figure('units','normalized','outerposition',[-0.98 0.69 0.93 0.23]);clf;
-plot(EV_HiC,'k','linewidth',1.5);axis tight;hold on;plot(EV_DDA,'m','linewidth',.8);set(gca,'FontSize',20)
+figure(2);clf;
+plot(EV_HiC,'k','linewidth',1.5);axis tight;hold on;
+plot(EV_DDA,'m','linewidth',.8);
+set(gca,'FontSize',20)
+title(sprintf('Chr%d r=%4.2f AUC=%4.2f ACC=%4.2f F1=%4.2f',...
+    ChrNr,C,AUC_AB,ACC,F1),'Interpreter','latex')
 xticks([1 size(HiCP,1)/2 size(HiCP,1)]);
+set(gcf,'position',[-1666 518 1586 466])
 saveas(gcf,sprintf('%s/PCs.svg',FIG_PATH))
 
-
 close all
-
-

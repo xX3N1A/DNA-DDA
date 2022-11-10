@@ -68,7 +68,7 @@ The general steps of DNA-DDA are:
     * take logarithm    
     * plot
 
-    ![DNA_DDA](/Figures/ContactMaps_ink.svg)
+    ![DNA_DDA](/Figures/ContactMaps.svg)
 
 
 10. calling A/B compartments (eg with HiCExplorer https://github.com/deeptools/HiCExplorer)
@@ -80,10 +80,10 @@ The general steps of DNA-DDA are:
        * `hicConvertFormat --outputFormat ginteractions` to generate tsv
        * in MATAB `pca(DNA_DDA_PEARSON)`
 
-    ![DNA_DDA_P](/Figures/Pearson_Matrices_ink.svg)
+    ![DNA_DDA_P](/Figures/Pearson_Matrices.svg)
 
 
-    ![PCs](/Figures/PCs_ink.svg)
+    ![PCs](/Figures/PCs.svg)
 
 
 
