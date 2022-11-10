@@ -12,7 +12,7 @@ The general steps of DNA-DDA are:
  3. combine ST and CT errors computed in step 2. to DE DDA to get DNA-DDA contact map  
  4. obtained DNA-DDA contact maps can be used as HiC-contact maps.
 
-![DNA-DDA procedure](/Figures/DNA_DDA_Procedure.svg)
+![DNA-DDA procedure](/Figures/DNA_DDA_RW_Procedure.svg)
 
 
 ## Requirements
@@ -46,7 +46,7 @@ The general steps of DNA-DDA are:
 	 
     * <FN_ASCII> has dimension **Resolution**$\times$**Nr_of_Bins** 
 	    
-    ![DNA_1DRW](/Figures/DNA_RW_ink.svg)
+    ![DNA_1DRW](/Figures/DNA_RW.svg)
 
 
  6. generate bash script to run DDA
