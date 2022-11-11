@@ -4,7 +4,7 @@
 
 ## Overview
 
-DNA-DDA has been adapted from the nonlinear time series analysis technique dynamical-ergodicity delay differential analysis (DE DDA) ( Lainscsek et. al https://doi.org/10.1063/5.0063724 ), in order to predict chromosomal contacts from a reference sequence. This page includes an example for predicting contacts of chromosome 22 at 100kbp resolution.
+DNA-DDA has been adapted from the nonlinear time series analysis technique dynamical-ergodicity delay differential analysis (DE DDA) ( Lainscsek et. al https://doi.org/10.1063/5.0063724 ), in order to predict chromosomal contacts from a reference sequence. This page includes an example for predicting contacts of chromosome 22 at 100kbp resolution in the GM12878 cell line.
 
 The general steps of DNA-DDA are:  
  1. convert the reference sequence into a random walk DNA representation  
@@ -18,6 +18,7 @@ The general steps of DNA-DDA are:
 ## Requirements
 * the DDA executable requires a Linux enviornment
 * post and preprocessing scripts are written in MATLAB R2019b
+* raw HiC data for GM12878 avilable in Gene Expression Omnibus under the accession **GSE63525** (Rao et al. (2014), Sanborn et al. (2015)).
 
 ## Usage
  1. clone repository
@@ -33,14 +34,12 @@ The general steps of DNA-DDA are:
  4. load **vars.mat**
 
     * **BINs** . . . contains bin number and coordinates of non-empty bins of chromosome 22
-    * **BINs\_ALL** . . . contains bin number and coordinates of all bins of chromosome 22 
     * **ChrNr** . . . chromosome number 
     * **ChrSize** . . . length of reference sequence of chromosome 22
-    * **Resolution** . . . 100kbp 
+    * **Resolution** . . . 100 kb 
     * **HiCM** . . . HiC-Contact map chromosome 22
-    * **HiCP** . . . HiC Pearson correlation matrix heatmap chromosome 22
-    * **EXCLUDE** . . . omitted regions from matrices Includes centromeres from UCSD genome browser and regions in close proximity to centromeres
-    * **EXCLUDE\_PCA** . . . omitted regions from PCA
+    * **HiCP** . . . HiC Pearson correlation matrix chromosome 22
+    * **EXCLUDE** . . . omitted regions from matrices Includes centromeres from UCSD genome browser and low coverage bins
 
  5. generate **1D DNA walk** and save to file <FN_ASCII> 
 	 
@@ -65,6 +64,7 @@ The general steps of DNA-DDA are:
 
     * map high to low values
     * fill in diagonal with neighboring values
+    * reflect distance dependency of contact probability: each loci pair is multiplied by their genomic distance to the negative power of one 
     * take logarithm    
     * plot
 

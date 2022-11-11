@@ -163,6 +163,7 @@ for d=2:size(DNA_DDA,1)
     DNA_DDA(d,d)=DNA_DDA(d-1,d);
 end
 
+% reflect distance dependency of contact probability
 for row=1:size(DNA_DDA,1)
     for col=1:size(DNA_DDA,1)
         if row~=col
