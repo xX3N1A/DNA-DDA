@@ -1,7 +1,4 @@
 function [DENSITY] = H3K4me1Density(BINs,Chr,BED_FILE)
-% go through bed file
-    % 1) in which bin is given gene?
-    % 2) +1 for that bin 
    
 DENSITY=zeros(size(BINs,1),2);
 DENSITY(:,1)=BINs(:,1);

@@ -55,12 +55,12 @@ The general steps of DNA-DDA are:
     ./<date>_runDDAbash.sh &
     ```
 	  
- 8. generate DNA-DDA contact matrix from DDA outputs and save to **ERGODICITY.mat**
+ 8. generate DNA-DDA contact matrix `DNA_DDA` from DDA outputs and save to **ERGODICITY.mat**
 
     * delay values of each cell line can be found in publication     
 
 
- 9. matrix post processing
+ 9. `DNA-DDA` matrix post processing
 
     * map high to low values
     * fill in diagonal with neighboring values
@@ -73,12 +73,18 @@ The general steps of DNA-DDA are:
 
 10. calling A/B compartments (eg with HiCExplorer https://github.com/deeptools/HiCExplorer)
 
-     * convert matrix to **homer** format (http://homer.ucsd.edu/homer/interactions/) 
+     * convert `DNA-DDA` matrix to **homer** format (http://homer.ucsd.edu/homer/interactions/) 
        * `hicConvertFormat` to convert **homer** to **h5**
        * `hicNormalize --normalize norm_range` to normalize to 0 and 1
        * `hicPCA --method "dist_norm" --ignoreMaskedBins --pearsonMatrix <OUT_FN.h5>` to generate pearson correlation matrix  
-       * `hicConvertFormat --outputFormat ginteractions` to generate tsv
-       * in MATAB `pca(DNA_DDA_PEARSON)`
+       * `hicConvertFormat --outputFormat ginteractions` to generate tsv 
+       * `hiCtsv_to_MATLABcsv` to load Pearson DNA-DDA matrix `DNA_DDA_P` into MATLAB
+       
+     * perform PCA with MATAB's `pca()` function to get principal component coefficients of `DNA_DDA_P` and `HiCP` matrices
+       * applying moving average filter to `PC_{DDA}`
+       * call `Norm_PC.m` to normalize and determine which PC defines A/B compartments
+         * MATLAB ’s `filloutliers(PC,’nearest’)` function replaces outliers by nearest nonoutlier value 
+         * determine the PC with highest correlation to H3K4me1 histone mark which is associated with open chromatin. The H3K4me1 density was derived from ChIPSeq data set under the GEO accession **GSM733772**
 
     ![DNA_DDA_P](/Figures/Pearson_Matrices.svg)
 

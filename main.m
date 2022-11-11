@@ -234,20 +234,20 @@ saveas(gcf,sprintf('%s/Pearson_Matrices.svg',FIG_PATH))
 HiCP(isnan(HiCP))=0;  
 DNA_DDA_P(isnan(DNA_DDA_P))=0;  
 
-EV_HiC=pca(HiCP);
-EV_DDA=pca(DNA_DDA_P);
-EV_DDA=movmean(EV_DDA,5);
+PC_HiC=pca(HiCP);
+PC_DDA=pca(DNA_DDA_P);
+PC_DDA=movmean(PC_DDA,5);
 
-[EV_HiC,whichPC_HiC]=Norm_PC(EV_HiC,BED_FILE,ChrNr,BINs);
-[EV_DDA,whichPC_DDA]=Norm_PC(EV_DDA,BED_FILE,ChrNr,BINs);
+[PC_HiC,whichPC_HiC]=Norm_PC(PC_HiC,BED_FILE,ChrNr,BINs);
+[PC_DDA,whichPC_DDA]=Norm_PC(PC_DDA,BED_FILE,ChrNr,BINs);
 
-[C,~,AUC_AB,ACC,F1] = perf_metrics(EV_DDA,EV_HiC);
+[C,~,AUC_AB,ACC,F1] = perf_metrics(PC_DDA,PC_HiC);
 
 sprintf('Chr%d r=%4.2f AUC=%4.2f ACC=%4.2f F1=%4.2f PC_hic=%d PC_dda=%d',ChrNr,C,AUC_AB,ACC,F1,whichPC_HiC,whichPC_DDA)
 
 figure(2);clf;
-plot(EV_HiC,'k','linewidth',1.5);axis tight;hold on;
-plot(EV_DDA,'m','linewidth',.8);
+plot(PC_HiC,'k','linewidth',1.5);axis tight;hold on;
+plot(PC_DDA,'m','linewidth',.8);
 set(gca,'FontSize',20)
 title(sprintf('Chr%d r=%4.2f AUC=%4.2f ACC=%4.2f F1=%4.2f',...
     ChrNr,C,AUC_AB,ACC,F1),'Interpreter','latex')
