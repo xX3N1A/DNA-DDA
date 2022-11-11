@@ -80,12 +80,12 @@ The general steps of DNA-DDA are:
        * `hicConvertFormat --outputFormat ginteractions` to generate tsv 
        * `hiCtsv_to_MATLABcsv` to load Pearson DNA-DDA matrix `DNA_DDA_P` into MATLAB
        
-     * perform PCA with MATAB's `pca()` function to get principal component coefficients of `DNA_DDA_P` and `HiCP` matrices 
+     * perform PCA with MATAB's `pca()` function to get principal component coefficients of `DNA_DDA_P` and `HiCP` matrices
      * the columns of resulting `PC_DDA` and `PC_HiC` contain coefficients for each PC in descending order of component variance
        * applying moving average filter to `PC_DDA`
-       * call `Norm_PC.m` to normalize and determine which of the first three PCs defines A/B compartments for `PC_DDA` and `PC_HiC`
+       * call `Norm_PC.m` on `PC_DDA` and `PC_HiC` to normalize and determine which of the first three PCs defines A/B compartments
          * MATLAB ’s `filloutliers(PC,’nearest’)` function replaces outliers by nearest nonoutlier value 
-         * determine the PC with highest correlation to H3K4me1 histone mark which is associated with open chromatin. The H3K4me1 density was derived from ChIPSeq data set under the GEO accession **GSM733772**
+         * Determines the PC with highest correlation to H3K4me1, a histone mark which is associated with open chromatin. The H3K4me1 density was derived from ChIPSeq data set under the GEO accession **GSM733772**
 
     ![DNA_DDA_P](/Figures/Pearson_Matrices.svg)
 
