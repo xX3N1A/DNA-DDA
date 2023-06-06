@@ -2,6 +2,9 @@
 ## An algorithm for predicting A/B compartments from the human reference sequence based on dynamical ergodicity DDA
 
 
+
+<sub><sup>Xenia Lainscsek, Leila Taher. Predicting chromosomal compartments directly from the nucleotide sequence with DNA-DDA. Briefings in Bioinformatics. 2023. https://doi.org/10.1093/bib/bbad198 .<sub><sup>
+
 ## Overview
 
 DNA-DDA has been adapted from the nonlinear time series analysis technique dynamical-ergodicity delay differential analysis (DE DDA) ( Lainscsek et. al https://doi.org/10.1063/5.0063724 ), in order to predict chromosomal contacts from a reference sequence. This page includes an example for predicting contacts of chromosome 22 at 100kbp resolution in the GM12878 cell line.
