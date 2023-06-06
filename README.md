@@ -3,7 +3,8 @@
 
 
 
-<sub><sup>Xenia Lainscsek, Leila Taher. Predicting chromosomal compartments directly from the nucleotide sequence with DNA-DDA. Briefings in Bioinformatics. 2023. https://doi.org/10.1093/bib/bbad198 .<sub><sup>
+X. Lainscsek, L. Taher. Predicting chromosomal compartments directly from the nucleotide sequence with DNA-DDA. Briefings in Bioinformatics. 2023. 
+https://doi.org/10.1093/bib/bbad198
 
 ## Overview
 
