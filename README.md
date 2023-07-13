@@ -16,7 +16,7 @@ The general steps of DNA-DDA are:
  3. combine ST and CT errors computed in step 2. to DE DDA to get DNA-DDA contact map  
  4. obtained DNA-DDA contact maps can be used as HiC-contact maps.
 
-![DNA-DDA procedure](/Figures/DNA_DDA_RW_Procedure.svg)
+![DNA-DDA procedure](./Figures/DNA_DDA_RW_Procedure.pdf)
 
 
 ## Requirements
@@ -49,7 +49,7 @@ The general steps of DNA-DDA are:
 	 
     * <FN_ASCII> has dimension **Resolution**$\times$**Nr_of_Bins** 
 	    
-    ![DNA_1DRW](/Figures/DNA_RW.svg)
+    ![DNA_1DRW](./Figures/DNA_RW.svg)
 
 
  6. generate bash script to run DDA
@@ -72,7 +72,7 @@ The general steps of DNA-DDA are:
     * take logarithm    
     * plot
 
-    ![DNA_DDA](/Figures/ContactMaps.svg)
+    ![DNA_DDA](./Figures/ContactMaps.svg)
 
 
 10. calling A/B compartments (eg with HiCExplorer https://github.com/deeptools/HiCExplorer)
@@ -91,10 +91,10 @@ The general steps of DNA-DDA are:
          * MATLAB ’s `filloutliers(PC,’nearest’)` function replaces outliers by nearest nonoutlier value 
          * Determines the PC with highest correlation to H3K4me1, a histone mark which is associated with open chromatin. The H3K4me1 density was derived from ChIPSeq data set under the GEO accession **GSM733772**
 
-    ![DNA_DDA_P](/Figures/Pearson_Matrices.svg)
+    ![DNA_DDA_P](./Figures/Pearson_Matrices.svg)
 
 
-    ![PCs](/Figures/PCs.svg)
+    ![PCs](./Figures/PCs.svg)
 
 
 
