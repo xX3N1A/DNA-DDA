@@ -49,7 +49,7 @@ The general steps of DNA-DDA are:
 	 
     * <FN_ASCII> has dimension **Resolution**$\times$**Nr_of_Bins** 
 	    
-    ![DNA_1DRW](./Figures/DNA_RW.png)
+   ![DNA_1DRW](./Figures/DNA_RW.png)
 
 
  6. generate bash script to run DDA
@@ -72,7 +72,7 @@ The general steps of DNA-DDA are:
     * take logarithm    
     * plot
 
-    ![DNA_DDA](./Figures/ContactMaps.png)
+   ![DNA_DDA](./Figures/ContactMaps.png)
 
 
 10. calling A/B compartments (eg with HiCExplorer https://github.com/deeptools/HiCExplorer)
@@ -91,10 +91,10 @@ The general steps of DNA-DDA are:
          * MATLAB ’s `filloutliers(PC,’nearest’)` function replaces outliers by nearest nonoutlier value 
          * Determines the PC with highest correlation to H3K4me1, a histone mark which is associated with open chromatin. The H3K4me1 density was derived from ChIPSeq data set under the GEO accession **GSM733772**
 
-    ![DNA_DDA_P](./Figures/Pearson_Matrices.png)
+   ![DNA_DDA_P](./Figures/Pearson_Matrices.png)
 
 
-    ![PCs](./Figures/PCs.png)
+   ![PCs](./Figures/PCs.png)
 
 
 
